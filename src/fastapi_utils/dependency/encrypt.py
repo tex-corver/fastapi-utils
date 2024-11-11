@@ -4,6 +4,8 @@ from typing import Any
 import jwt
 import utils
 
+__all__ = ["create_access_token"]
+
 
 def create_access_token(
     data: dict[str, Any],
