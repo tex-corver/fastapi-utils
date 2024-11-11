@@ -43,3 +43,6 @@ class TestGetAuthorizationContext:
         ctx = fastapi_utils.get_authorization_context(token)
         ic(ctx)
         assert isinstance(ctx, io_schema.AuthorizationContext)
+        # TODO: More assertions
+
+

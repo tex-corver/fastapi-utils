@@ -37,4 +37,7 @@ update-tex-corver-deps:
 	poetry update $(call get_tex_corver_deps)
 .PHONY: test
 test: 
-	CONFIG_PATH=$(config_path) pytest -c $(project_path)/pyproject.toml $(o) $(project_path)/tests/$(p)
+	CONFIG_PATH=$(config_path) pytest \
+		-c $(project_path)/pyproject.toml \
+		$(o) \
+		$(project_path)/tests/$(p)
