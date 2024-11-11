@@ -1,0 +1,5 @@
+database:
+  type: mysql
+  framework: sqlalchemy
+  connection:
+    url: mysql+pymysql://root:admin@192.168.0.100:3306/user_service
