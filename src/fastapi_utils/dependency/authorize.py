@@ -36,9 +36,14 @@ def get_decryption_key() -> bytes:
 def get_authorization_context(
     authorization: str = fastapi.Header(...),
 ) -> io_schema.AuthorizationContext:
+    return decrypt_authorize_token(authorization)
+
+
+# TODO: Move to common lib tex-corver encryption
+def decrypt_authorize_token(token: str) -> io_schema.AuthorizationContext:
     key = get_decryption_key()
     payload = jwt.decode(
-        authorization,
+        token,
         key=key,
         algorithms=encryption_config["jwt"]["algorithm"],
     )
