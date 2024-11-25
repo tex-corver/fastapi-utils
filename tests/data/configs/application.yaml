@@ -2,7 +2,7 @@ application:
   name: user_service
   token:
     expiration:
-      login: 2592000 # 30 days
+      login: 43200 # 30 days
       otp: 5 # 5 minutes
 
   encryption:
@@ -10,7 +10,7 @@ application:
       algorithm: RS256
       private_key: tests/data/configs/private_key.pem
       public_key: tests/data/configs/public_key.pem
-      expiration: 2592000 # 30 days
+      expiration: 43200 # 30 days
 
   google_oauth:
     client_id: 294428498927-aj221bh0l2ab6vh3lp1209l3qpar97hu.apps.googleusercontent.com
