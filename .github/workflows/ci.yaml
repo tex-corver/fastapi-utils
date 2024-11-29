@@ -1,0 +1,37 @@
+name: Python CI
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+      - NEXT*
+  pull_request:
+    branches:
+      - master
+      - dev
+
+jobs:
+  test:
+    runs-on: arc-runner-set
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          docker build \
+            --tag tex-corver/fastapi-utils:${{ github.ref_name }}.${{ github.sha }} \
+            --ssh default=$HOME/.ssh/id_ed25519 \
+            --file Dockerfile .
+
+      - name: Run tests
+        run: |
+          docker run \
+            tex-corver/fastapi-utils:${{ github.ref_name }}.${{ github.sha }} \
+            sh -c 'CONFIG_PATH=$PWD/.ci-config pytest'
+
+          if [ $? -eq 0 ]; then
+            echo "Tests passed"
+          else
+            exit 1
+          fi
