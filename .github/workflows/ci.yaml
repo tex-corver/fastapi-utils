@@ -20,14 +20,14 @@ jobs:
 
       - run: |
           docker build \
-            --tag tex-corver/fastapi-utils:${{ github.ref_name }}.${{ github.sha }} \
+            --tag tex-corver/fastapi-utils \
             --ssh default=$HOME/.ssh/id_ed25519 \
             --file Dockerfile .
 
       - name: Run tests
         run: |
           docker run \
-            tex-corver/fastapi-utils:${{ github.ref_name }}.${{ github.sha }} \
+            tex-corver/fastapi-utils \
             sh -c 'CONFIG_PATH=$PWD/.ci-config pytest'
 
           if [ $? -eq 0 ]; then
