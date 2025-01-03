@@ -81,6 +81,328 @@ def _is_duplicated_time_series(error: ValueError) -> bool:
     )
 
 
+def latency(
+    metric_name: str = "http_request_duration_seconds",
+    metric_doc: str = "Duration of HTTP requests in seconds",
+    metric_namespace: str = "",
+    metric_subsystem: str = "",
+    buckets: Sequence[float | str] = Histogram.DEFAULT_BUCKETS,
+    registry: CollectorRegistry = REGISTRY,
+) -> Optional[Callable[[Info], None]]:
+    """Default metric for the Prometheus Starlette Instrumentator.
+
+    Args:
+        metric_name (str, optional): Name of the metric to be created. Must be
+            unique. Defaults to "http_request_duration_seconds".
+
+        metric_doc (str, optional): Documentation of the metric. Defaults to
+            "Duration of HTTP requests in seconds".
+
+        metric_namespace (str, optional): Namespace of all  metrics in this
+            metric function. Defaults to "".
+
+        metric_subsystem (str, optional): Subsystem of all  metrics in this
+            metric function. Defaults to "".
+
+        buckets: Buckets for the histogram. Defaults to Prometheus default.
+            Defaults to default buckets from Prometheus client library.
+
+    Returns:
+        Function that takes a single parameter `Info`.
+    """
+
+    if buckets[-1] != float("inf"):
+        buckets = [*buckets, float("inf")]
+
+    label_names, info_attribute_names = _build_label_attribute_names()
+
+    try:
+        METRIC = Histogram(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            buckets=buckets,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
+
+        def instrumentation(info: Info) -> None:
+            duration = info.modified_duration
+
+            label_values = [
+                getattr(info, attribute_name) for attribute_name in info_attribute_names
+            ]
+
+            METRIC.labels(*label_values).observe(duration)
+
+        return instrumentation
+    except ValueError as e:
+        if not _is_duplicated_time_series(e):
+            raise e
+
+    return None
+
+
+def request_size(
+    metric_name: str = "http_request_size_bytes",
+    metric_doc: str = "Content bytes of requests.",
+    metric_namespace: str = "",
+    metric_subsystem: str = "",
+    registry: CollectorRegistry = REGISTRY,
+) -> Optional[Callable[[Info], None]]:
+    """Record the content length of incoming requests.
+
+    If content length is missing 0 will be assumed.
+
+    Args:
+        metric_name (str, optional): Name of the metric to be created. Must be
+            unique. Defaults to "http_request_size_bytes".
+        metric_doc (str, optional): Documentation of the metric. Defaults to
+            "Content bytes of requests.".
+        metric_namespace (str, optional): Namespace of all  metrics in this
+            metric function. Defaults to "".
+        metric_subsystem (str, optional): Subsystem of all  metrics in this
+            metric function. Defaults to "".
+
+    Returns:
+        Function that takes a single parameter `Info`.
+    """
+
+    label_names, info_attribute_names = _build_label_attribute_names()
+
+    # Starlette will call app.build_middleware_stack() with every new middleware
+    # added, which will call all this again, which will make the registry
+    # complain about duplicated metrics.
+    #
+    # The Python Prometheus client currently doesn't seem to have a way to
+    # verify if adding a metric will cause errors or not, so the only way to
+    # handle it seems to be with this try block.
+    try:
+        METRIC = Summary(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
+
+        def instrumentation(info: Info) -> None:
+            content_length = info.request.headers.get("Content-Length", 0)
+            label_values = [
+                getattr(info, attribute_name) for attribute_name in info_attribute_names
+            ]
+
+            METRIC.labels(*label_values).observe(int(content_length))
+
+        return instrumentation
+    except ValueError as e:
+        if not _is_duplicated_time_series(e):
+            raise e
+
+    return None
+
+
+def response_size(
+    metric_name: str = "http_response_size_bytes",
+    metric_doc: str = "Content bytes of responses.",
+    metric_namespace: str = "",
+    metric_subsystem: str = "",
+    registry: CollectorRegistry = REGISTRY,
+) -> Optional[Callable[[Info], None]]:
+    """Record the content length of outgoing responses.
+
+    If content length is missing 0 will be assumed.
+
+    Args:
+        metric_name (str, optional): Name of the metric to be created. Must be
+            unique. Defaults to "http_response_size_bytes".
+
+        metric_doc (str, optional): Documentation of the metric. Defaults to
+            "Content bytes of responses.".
+
+        metric_namespace (str, optional): Namespace of all  metrics in this
+            metric function. Defaults to "".
+
+        metric_subsystem (str, optional): Subsystem of all  metrics in this
+            metric function. Defaults to "".
+
+    Returns:
+        Function that takes a single parameter `Info`.
+    """
+
+    label_names, info_attribute_names = _build_label_attribute_names()
+
+    # Starlette will call app.build_middleware_stack() with every new middleware
+    # added, which will call all this again, which will make the registry
+    # complain about duplicated metrics.
+    #
+    # The Python Prometheus client currently doesn't seem to have a way to
+    # verify if adding a metric will cause errors or not, so the only way to
+    # handle it seems to be with this try block.
+    try:
+        METRIC = Summary(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
+
+        def instrumentation(info: Info) -> None:
+            if info.response and hasattr(info.response, "headers"):
+                content_length = info.response.headers.get("Content-Length", 0)
+            else:
+                content_length = 0
+
+            label_values = [
+                getattr(info, attribute_name) for attribute_name in info_attribute_names
+            ]
+
+            METRIC.labels(*label_values).observe(int(content_length))
+
+        return instrumentation
+    except ValueError as e:
+        if not _is_duplicated_time_series(e):
+            raise e
+
+    return None
+
+
+def combined_size(
+    metric_name: str = "http_combined_size_bytes",
+    metric_doc: str = "Content bytes of requests and responses.",
+    metric_namespace: str = "",
+    metric_subsystem: str = "",
+    registry: CollectorRegistry = REGISTRY,
+) -> Optional[Callable[[Info], None]]:
+    """Record the combined content length of requests and responses.
+
+    If content length is missing 0 will be assumed.
+
+    Args:
+        metric_name (str, optional): Name of the metric to be created. Must be
+            unique. Defaults to "http_combined_size_bytes".
+
+        metric_doc (str, optional): Documentation of the metric. Defaults to
+            "Content bytes of requests and responses.".
+
+        metric_namespace (str, optional): Namespace of all  metrics in this
+            metric function. Defaults to "".
+
+        metric_subsystem (str, optional): Subsystem of all  metrics in this
+            metric function. Defaults to "".
+
+
+    Returns:
+        Function that takes a single parameter `Info`.
+    """
+
+    label_names, info_attribute_names = _build_label_attribute_names()
+
+    # Starlette will call app.build_middleware_stack() with every new middleware
+    # added, which will call all this again, which will make the registry
+    # complain about duplicated metrics.
+    #
+    # The Python Prometheus client currently doesn't seem to have a way to
+    # verify if adding a metric will cause errors or not, so the only way to
+    # handle it seems to be with this try block.
+    try:
+        METRIC = Summary(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
+
+        def instrumentation(info: Info) -> None:
+            request_cl = info.request.headers.get("Content-Length", 0)
+
+            if info.response and hasattr(info.response, "headers"):
+                response_cl = info.response.headers.get("Content-Length", 0)
+            else:
+                response_cl = 0
+
+            content_length = int(request_cl) + int(response_cl)
+
+            label_values = [
+                getattr(info, attribute_name) for attribute_name in info_attribute_names
+            ]
+
+            METRIC.labels(*label_values).observe(int(content_length))
+
+        return instrumentation
+    except ValueError as e:
+        if not _is_duplicated_time_series(e):
+            raise e
+
+    return None
+
+
+def requests(
+    metric_name: str = "http_requests_total",
+    metric_doc: str = "Total number of requests by method, status and handler.",
+    metric_namespace: str = "",
+    metric_subsystem: str = "",
+    registry: CollectorRegistry = REGISTRY,
+) -> Optional[Callable[[Info], None]]:
+    """Record the number of requests.
+
+    Args:
+        metric_name (str, optional): Name of the metric to be created. Must
+            be unique. Defaults to "http_requests_total".
+
+        metric_doc (str, optional): Documentation of the metric. Defaults to
+            "Total number of requests by method, status and handler.".
+
+        metric_namespace (str, optional): Namespace of all  metrics in this
+            metric function. Defaults to "".
+
+        metric_subsystem (str, optional): Subsystem of all  metrics in this
+            metric function. Defaults to "".
+
+    Returns:
+        Function that takes a single parameter `Info`.
+    """
+
+    label_names, info_attribute_names = _build_label_attribute_names()
+
+    # Starlette will call app.build_middleware_stack() with every new middleware
+    # added, which will call all this again, which will make the registry
+    # complain about duplicated metrics.
+    #
+    # The Python Prometheus client currently doesn't seem to have a way to
+    # verify if adding a metric will cause errors or not, so the only way to
+    # handle it seems to be with this try block.
+    try:
+        METRIC = Counter(
+            metric_name,
+            metric_doc,
+            labelnames=label_names,
+            namespace=metric_namespace,
+            subsystem=metric_subsystem,
+            registry=registry,
+        )
+
+        def instrumentation(info: Info) -> None:
+            label_values = [
+                getattr(info, attribute_name) for attribute_name in info_attribute_names
+            ]
+
+            METRIC.labels(*label_values).inc()
+
+        return instrumentation
+    except ValueError as e:
+        if not _is_duplicated_time_series(e):
+            raise e
+
+    return None
+
+
 def default(
     metric_namespace: str = "",
     metric_subsystem: str = "",
