@@ -19,6 +19,7 @@ tex-corver-utils = {git = "git@github.com:tex-corver/utils.git"}
 tex-corver-io-schema = {git = "git@github.com:tex-corver/io-schema.git"}
 pyjwt = "^2.9.0"
 cryptography = "^43.0.3"
+prometheus-client = "^0.21.1"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.22.2"
