@@ -55,7 +55,7 @@ class PrometheusMiddleware:
         start_time = default_timer()
 
         handler, is_templated = self._get_handler(request)
-        handler = "none" if not is_templated else handler
+        handler = handler if is_templated else "none"
 
         inprogress = self.inprogress.labels(request.method, handler)
         inprogress.inc()
