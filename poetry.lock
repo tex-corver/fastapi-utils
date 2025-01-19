@@ -1677,6 +1677,21 @@ files = [
 ]
 
 [[package]]
+name = "redis"
+version = "5.2.1"
+description = "Python client for Redis database and key-value store"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "redis-5.2.1-py3-none-any.whl", hash = "sha256:ee7e1056b9aea0f04c6c2ed59452947f34c4940ee025f5dd83e6a6418b6989e4"},
+    {file = "redis-5.2.1.tar.gz", hash = "sha256:16f2e22dff21d5125e8481515e386711a34cbec50f0e44413dd7d9c060a54e0f"},
+]
+
+[package.extras]
+hiredis = ["hiredis (>=3.0.0)"]
+ocsp = ["cryptography (>=36.0.1)", "pyopenssl (==23.2.1)", "requests (>=2.31.0)"]
+
+[[package]]
 name = "rich"
 version = "13.9.4"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
@@ -1893,6 +1908,7 @@ files = []
 develop = false
 
 [package.dependencies]
+pre-commit = "3.8.0"
 pydantic = "^2.7.4"
 pytest = "8.2.2"
 tex-corver-core = {git = "git@github.com:tex-corver/core.git"}
@@ -1901,7 +1917,29 @@ tex-corver-core = {git = "git@github.com:tex-corver/core.git"}
 type = "git"
 url = "git@github.com:tex-corver/io-schema.git"
 reference = "HEAD"
-resolved_reference = "0efa93b5f521e89d3f3df91069569814e755a4c4"
+resolved_reference = "5fbb655a92e2123cee75443c4d60c63d5dd960eb"
+
+[[package]]
+name = "tex-corver-message-broker"
+version = "0.1.0"
+description = ""
+optional = false
+python-versions = "^3.12"
+files = []
+develop = false
+
+[package.dependencies]
+icecream = "^2.1.3"
+pre-commit = "3.8.0"
+redis = "^5.0.1"
+tex-corver-core = {git = "git@github.com:tex-corver/core.git"}
+tex-corver-utils = {git = "git@github.com:tex-corver/utils.git"}
+
+[package.source]
+type = "git"
+url = "git@github.com:tex-corver/message-broker.git"
+reference = "HEAD"
+resolved_reference = "f61a931dd9e80afb8f439c97aaebafd1dde2f61b"
 
 [[package]]
 name = "tex-corver-utils"
@@ -2381,4 +2419,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "5d4e7ce3ab3a28af0c5123bb7dce135107c3400ba3a773d1993cfefbbc291ce3"
+content-hash = "49c1db4509a36ad8e99e66417491b64086f9e217bcb25f3c4ebff2bca449f468"
