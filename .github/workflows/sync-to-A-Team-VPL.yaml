@@ -1,0 +1,67 @@
+name: Sync to A-Team-VPL
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  init-first-commit:
+    runs-on: arc-runner-set
+
+    steps:
+      - run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+      - name: Init first commit
+        run: |
+          git clone git@github.com:tex-corver/fastapi-utils.git
+          cd fastapi-utils
+
+          # Add the remote to the repository
+          git remote add VPL git@github.com:A-Team-VPL/fastapi-utils.git
+          if git ls-remote --exit-code VPL; then
+            echo "Repository has content. Proceeding with normal sync."
+          else
+            echo "Repository is empty. Initializing it."
+            git checkout --orphan temp-branch
+            git reset --hard # Ensure that the branch is empty
+            git commit --allow-empty -m "Initial commit"
+            git push VPL temp-branch:master
+          fi
+  sync:
+    needs: init-first-commit
+    runs-on: arc-runner-set
+    steps:
+      - name: Push to A-Team-VPL/sync
+        run: |
+          git clone git@github.com:tex-corver/fastapi-utils.git
+          cd fastapi-utils
+
+          git remote add VPL git@github.com:A-Team-VPL/fastapi-utils.git
+          git fetch VPL
+          git push VPL master:sync
+
+  merge-and-delete-sync:
+    runs-on: arc-runner-set
+    needs: sync
+
+    steps:
+      - run: | 
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+
+      - name: Merge sync to master
+        run: |
+          # Clone the repository
+          git clone git@github.com:A-Team-VPL/fastapi-utils.git
+          cd fastapi-utils
+
+          # Merge the sync branch to master
+          git fetch origin sync
+          git checkout master
+          git merge origin/sync --no-edit --allow-unrelated-histories
+
+          # Push the changes to the repository and delete the sync branch
+          git push origin master
+          git push origin --delete sync
