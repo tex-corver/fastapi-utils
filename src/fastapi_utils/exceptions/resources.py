@@ -8,9 +8,9 @@ __all__ = ["ResourceNotFoundException", "ResourceAlreadyExistsException"]
 class ResourceNotFoundException(Exception):
     """"""
 
-    def __init__(self, id: Any, resource: Type[core.BaseModel]):
+    def __init__(self, id: Any, resource: Type[core.BaseModel] | str):
         self.id = id
-        self.resource = resource
+        self.resource = resource if isinstance(resource, str) else resource.__name__
 
 
 class ResourceAlreadyExistsException(Exception):
