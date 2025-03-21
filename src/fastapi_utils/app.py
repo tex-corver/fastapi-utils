@@ -4,8 +4,8 @@ from fastapi_utils.middlewares.exception_handlers import *
 from fastapi_utils.exceptions.resources import *
 
 
-def create_app() -> fastapi.FastAPI:
-    app = fastapi.FastAPI()
+def create_app(**kwargs) -> fastapi.FastAPI:
+    app = fastapi.FastAPI(**kwargs)
     app.add_exception_handler(
         ResourceNotFoundException,
         handle_resource_not_found,
