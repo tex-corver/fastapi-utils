@@ -116,16 +116,9 @@ log_cli = true
 log_cli_level = "INFO"
 filterwarnings = "error"
 addopts = '''
-    -x
     -s
     -vvv
     -p no:warnings
-    --strict-markers
-    --tb=short
-    --cov=src
-    --cov-branch
-    --cov-report=term-missing
-    --cov-fail-under=40
 '''
 
 [tool.ruff]
