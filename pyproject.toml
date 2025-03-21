@@ -21,6 +21,7 @@ pyjwt = "^2.9.0"
 cryptography = "^43.0.3"
 prometheus-client = "^0.21.1"
 tex-corver-message-broker = {git = "git@github.com:tex-corver/message-broker.git"}
+inflect = "^7.5.0"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.22.2"
@@ -117,16 +118,9 @@ log_cli = true
 log_cli_level = "INFO"
 filterwarnings = "error"
 addopts = '''
-    -x
     -s
     -vvv
     -p no:warnings
-    --strict-markers
-    --tb=short
-    --cov=src
-    --cov-branch
-    --cov-report=term-missing
-    --cov-fail-under=40
 '''
 
 [tool.ruff]

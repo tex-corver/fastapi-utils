@@ -44,5 +44,3 @@ class TestGetAuthorizationContext:
         ic(ctx)
         assert isinstance(ctx, io_schema.AuthorizationContext)
         # TODO: More assertions
-
-

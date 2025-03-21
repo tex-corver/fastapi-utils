@@ -35,9 +35,30 @@ update-tex-corver-deps:
 	@source $(SHELLPROFILE) && \
 	conda activate $(service) && \
 	poetry update $(call get_tex_corver_deps)
-.PHONY: test
-test: 
+
+.PHONY: _test
+_test:
 	CONFIG_PATH=$(config_path) pytest \
 		-c $(project_path)/pyproject.toml \
 		$(o) \
 		$(project_path)/tests/$(p)
+
+
+.PHONY: local-test
+local-test:
+	$(MAKE) _test p="$(p)" o="$(o)"
+
+.PHONY: test
+test: 
+	$(MAKE) _test p="$(p)" o=" \
+		-x \
+		-s \
+		-vvv \
+		-p no:warnings \
+		--strict-markers \
+		--tb=short \
+		--cov=src \
+		--cov-branch \
+		--cov-report=term-missing \
+		--cov-fail-under=40 \
+		$(o)"
