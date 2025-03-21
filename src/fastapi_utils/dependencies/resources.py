@@ -3,9 +3,9 @@ import http
 from typing import NewType, TypeVar, Generic, Type
 import core
 import utils
+from fastapi_utils.exceptions import ResourceNotFoundException
 
 __all__ = [
-    "verify_resource_inexisted",
     "verify_resource_existed",
     "get_resource_manager",
     "set_resource_manager",
@@ -50,27 +50,27 @@ def set_resource_manager(resource_manager: ResourceManager):
     RESOURCE_MANAGER = resource_manager
 
 
-async def verify_resource_inexisted(request: fastapi.Request):
-    root_path = request.scope["root_path"]
-    full_path = request.scope["path"]
-    path = request.url.path
+# async def verify_resource_inexisted(request: fastapi.Request):
+#     root_path = request.scope["root_path"]
+#     full_path = request.scope["path"]
+#     path = request.url.path
 
-    path_parts = path.split("/")
-    if len(path_parts) < 1:
-        return
+#     path_parts = path.split("/")
+#     if len(path_parts) < 1:
+#         return
 
-    resource_type = path_parts[1]
-    resource_manager = get_resource_manager()
-    try:
-        resource_manager.verify_resource_inexisted(
-            resource_type=resource_type,
-            **identifiers,
-        )
-    except ValueError as e:
-        raise fastapi.HTTPException(
-            status_code=http.HTTPStatus.CONFLICT,
-            detail=str(e),
-        )
+#     resource_type = path_parts[1]
+#     resource_manager = get_resource_manager()
+#     try:
+#         resource_manager.verify_resource_inexisted(
+#             resource_type=resource_type,
+#             **identifiers,
+#         )
+#     except ValueError as e:
+#         raise fastapi.HTTPException(
+#             status_code=http.HTTPStatus.CONFLICT,
+#             detail=str(e),
+#         )
 
 
 async def verify_resource_existed(
@@ -95,7 +95,6 @@ async def verify_resource_existed(
             id=id,
         )
     except ValueError as e:
-        raise fastapi.HTTPException(
-            status_code=http.HTTPStatus.NOT_FOUND,
-            detail=str(e),
+        raise ResourceNotFoundException(
+            id, resource_manager.get_model_cls(resource_type)
         )
