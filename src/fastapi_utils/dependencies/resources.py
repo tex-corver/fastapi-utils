@@ -75,7 +75,7 @@ async def verify_resource_inexisted(request: fastapi.Request):
 
 async def verify_resource_existed(
     request: fastapi.Request,
-    id: str,
+    id: int | str,
 ):
     if id is None:
         return

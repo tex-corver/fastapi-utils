@@ -2007,7 +2007,7 @@ tex-corver-utils = {git = "git@github.com:tex-corver/utils.git"}
 type = "git"
 url = "git@github.com:tex-corver/core.git"
 reference = "HEAD"
-resolved_reference = "5d5053fdaad7e421f86e28a90c4fd8d8383e6945"
+resolved_reference = "b6ab4cc035cbc3b533b080ee243697eb6953de63"
 
 [[package]]
 name = "tex-corver-io-schema"
