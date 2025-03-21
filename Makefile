@@ -60,5 +60,5 @@ test:
 		--cov=src \
 		--cov-branch \
 		--cov-report=term-missing \
-		--cov-fail-under=40 \
+		--cov-fail-under=60 \
 		$(o)"
