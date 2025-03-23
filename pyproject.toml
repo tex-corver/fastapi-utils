@@ -22,6 +22,7 @@ cryptography = "^43.0.3"
 prometheus-client = "^0.21.1"
 tex-corver-message-broker = {git = "git@github.com:tex-corver/message-broker.git"}
 inflect = "^7.5.0"
+python-multipart = "^0.0.20"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.22.2"
