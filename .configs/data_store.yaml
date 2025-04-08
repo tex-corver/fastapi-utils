@@ -1,0 +1,9 @@
+data_store:
+  framework: minio
+  root_bucket: sandbox
+  connection:
+    endpoint: 192.168.0.100:9000
+    access_key: admin
+    secret_key: y9wb3N0Z3
+    secure: false
+

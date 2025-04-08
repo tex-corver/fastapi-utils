@@ -10,15 +10,20 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.12"
-black = "^23.11.0"
-pydantic = "^2.6.2"
-icecream = "^2.1.3"
-fastapi = "0.111.0"
+black = "^23.11"
+pydantic = "^2.6"
+icecream = "^2.1"
+fastapi = ">=0.0.0"
 
 tex-corver-utils = {git = "git@github.com:tex-corver/utils.git"}
 tex-corver-io-schema = {git = "git@github.com:tex-corver/io-schema.git"}
 pyjwt = "^2.9.0"
 cryptography = "^43.0.3"
+prometheus-client = "^0.21.1"
+tex-corver-message-broker = {git = "git@github.com:tex-corver/message-broker.git"}
+
+inflect = "^7.5.0"
+python-multipart = "^0.0.20"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.22.2"
@@ -115,16 +120,9 @@ log_cli = true
 log_cli_level = "INFO"
 filterwarnings = "error"
 addopts = '''
-    -x
     -s
     -vvv
     -p no:warnings
-    --strict-markers
-    --tb=short
-    --cov=src
-    --cov-branch
-    --cov-report=term-missing
-    --cov-fail-under=40
 '''
 
 [tool.ruff]

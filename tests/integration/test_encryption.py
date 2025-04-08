@@ -1,8 +1,7 @@
-import pytest
 from icecream import ic
 
 import utils
-from fastapi_utils.dependency import authorize
+from fastapi_utils.dependencies import authorize
 
 
 config = utils.get_config()
