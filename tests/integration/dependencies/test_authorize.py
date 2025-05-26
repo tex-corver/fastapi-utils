@@ -1,46 +1,42 @@
-from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Any, Generator, List
+import uuid
 
 import io_schema
-import jwt
 import pytest
 from icecream import ic
 
 import fastapi_utils
 
 
+def create_payload() -> dict[str, Any]:
+    return {
+        "user_id": f"user-{uuid.uuid4()}",
+        "device_id": f"device-{uuid.uuid4()}",
+    }
+
+
+@pytest.fixture
+def payloads(request) -> Generator[List[dict[str, Any]], Any, None]:
+    num_payloads = request.param
+    payloads = [create_payload() for _ in range(num_payloads)]
+    yield payloads
+
+
 class TestGetAuthorizationContext:
-    # TODO: indirect parametrization
-    @pytest.fixture
-    def payload(self):
-        return {
-            "user_id": "test",
-            "device_id": "test",
-        }
-
-    @pytest.fixture
-    def token(
-        self,
-        config: dict[str, Any],
-        payload: dict[str, Any],
-    ) -> str:
-        ic(config)
-        expires_delta = int(config["application"]["token"]["expiration"]["login"])
-        expire = datetime.now(timezone.utc) + timedelta(minutes=expires_delta)
-        payload = payload.copy() | {"exp": expire}
-        SECRET_KEY = open(
-            config["application"]["encryption"]["jwt"]["private_key"], "rb"
-        ).read()
-        encoded_jwt = jwt.encode(
-            payload,
-            SECRET_KEY,
-            algorithm=config["application"]["encryption"]["jwt"]["algorithm"],
+    @pytest.mark.parametrize("payloads", [1], indirect=True)
+    def test_get_authorization_context(self, config, payloads: dict[str, Any]):
+        # arrange
+        payload = payloads[0]
+        token = fastapi_utils.create_access_token(
+            data=payload,
+            expires_delta=int(config["application"]["token"]["expiration"]["login"]),
         )
-        return encoded_jwt
 
-    # TODO: Add more test cases with pytest.mark.parametrize
-    def test_get_authorization_context(self, token: str, payload: dict[str, Any]):
+        # act
         ctx = fastapi_utils.get_authorization_context(token)
+
+        # assert
         ic(ctx)
         assert isinstance(ctx, io_schema.AuthorizationContext)
-        # TODO: More assertions
+        for key, value in payload.items():
+            assert getattr(ctx, key, None) == value

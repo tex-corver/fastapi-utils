@@ -17,8 +17,10 @@ import core
 class Model(core.BaseModel):
     id: str
 
+
 class CreateModelCommand(pdt.BaseModel):
     id: str
+
 
 @pytest.fixture
 def start_orm_func() -> Callable[[], None]:
@@ -78,6 +80,15 @@ def rest_client(
         methods=["GET"],
     )
 
+    def raise_resource_already_exists_exception():
+        raise fastapi_utils.ResourceAlreadyExistsException("1", Model)
+
+    app.add_api_route(
+        "/already-exists-exception",
+        raise_resource_already_exists_exception,
+        methods=["GET"],
+    )
+
     def raise_validation_error():
         CreateModelCommand()
 
@@ -96,6 +107,8 @@ def rest_client(
         methods=["GET"],
     )
 
+    
+    
     return testclient.TestClient(app)
 
 
@@ -114,6 +127,12 @@ class TestApp:
                 "GET",
                 http.HTTPStatus.NOT_FOUND,
                 id="not-found-exception",
+            ),
+            pytest.param(
+                "/already-exists-exception",
+                "GET",
+                http.HTTPStatus.CONFLICT,
+                id="already-exists-exception",
             ),
             pytest.param(
                 "/validation-errors",
