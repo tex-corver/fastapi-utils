@@ -2,11 +2,12 @@ import pathlib
 from typing import Any
 
 import fastapi
-import io_schema
 import jwt
 import requests
 import utils
 from icecream import ic
+
+from fastapi_utils import schemas
 
 __all__ = ["tracing_headers", "get_authorization_context"]
 
@@ -18,8 +19,8 @@ def tracing_headers(
     session_id: str = fastapi.Header(None),
     device_id: str = fastapi.Header(None),
     authorization: str = fastapi.Header(None),
-) -> io_schema.TracingHeaders:
-    return io_schema.TracingHeaders(
+) -> schemas.TracingHeaders:
+    return schemas.TracingHeaders(
         session_id=session_id,
         device_id=device_id,
         token=authorization,
@@ -52,16 +53,16 @@ def download_decryption_key() -> bytes:
 
 def get_authorization_context(
     authorization: str = fastapi.Header(...),
-) -> io_schema.AuthorizationContext:
+) -> schemas.AuthorizationContext:
     return decrypt_authorize_token(authorization)
 
 
 # TODO: Move to common lib tex-corver encryption
-def decrypt_authorize_token(token: str) -> io_schema.AuthorizationContext:
+def decrypt_authorize_token(token: str) -> schemas.AuthorizationContext:
     key = get_decryption_key()
     payload = jwt.decode(
         token,
         key=key,
         algorithms=encryption_config["jwt"]["algorithm"],
     )
-    return io_schema.AuthorizationContext(**payload)
+    return schemas.AuthorizationContext(**payload)

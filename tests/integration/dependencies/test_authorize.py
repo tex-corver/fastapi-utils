@@ -1,11 +1,11 @@
 from typing import Any, Generator, List
 import uuid
 
-import io_schema
 import pytest
 from icecream import ic
 
 import fastapi_utils
+from fastapi_utils import schemas
 
 
 def create_payload() -> dict[str, Any]:
@@ -37,6 +37,6 @@ class TestGetAuthorizationContext:
 
         # assert
         ic(ctx)
-        assert isinstance(ctx, io_schema.AuthorizationContext)
+        assert isinstance(ctx, schemas.AuthorizationContext)
         for key, value in payload.items():
             assert getattr(ctx, key, None) == value
