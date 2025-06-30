@@ -4,22 +4,20 @@ version = "0.1.0"
 description = ""
 authors = ["lle <hjjddbz@gmail.com>"]
 readme = "README.md"
-packages = [
-    { include = "fastapi_utils", from = "src" },
-]
+packages = [{ include = "fastapi_utils", from = "src" }]
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.12"
 black = "^23.11"
 pydantic = "^2.6"
 icecream = "^2.1"
 fastapi = ">=0.0.0"
 
-tex-corver-utils = {git = "git@github.com:tex-corver/utils.git"}
+tex-corver-utils = { git = "git@github.com:tex-corver/utils.git" }
 pyjwt = "^2.9.0"
 cryptography = "^43.0.3"
 prometheus-client = "^0.21.1"
-tex-corver-message-broker = {git = "git@github.com:tex-corver/message-broker.git"}
+tex-corver-message-broker = { git = "git@github.com:tex-corver/message-broker.git" }
 
 inflect = "^7.5.0"
 python-multipart = "^0.0.20"
