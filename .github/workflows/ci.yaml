@@ -1,0 +1,17 @@
+name: Python CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - dev
+  pull_request:
+    branches:
+      - master
+      - dev
+
+jobs:
+  call-common-workflow:
+    uses: tex-corver/.github/.github/workflows/test-common-lib.yaml@master
+      
