@@ -1,15 +1,1 @@
-application:
-  encryption:
-    jwt:
-      public_key: "arn:aws:iam::123456789012:role/my-role"
-
-    iam:
-      role: "arn:aws:iam::123456789012:role/my-role"
-      key: "my-encryption-key"
-
-iam:
-  host: "iam.amazonaws.com"
-  actions:
-    get_public_key:
-      method: "GET"
-      url: "/getPublicKey"
+application: {}
