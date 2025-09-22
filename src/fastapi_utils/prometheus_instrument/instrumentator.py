@@ -111,7 +111,7 @@ class PrometheusInstrumentator:
 
         Args:
             instrumentation_function: Function
-                that will be executed during every request handler call (if
+                that will be executed during every request endpoint call (if
                 not excluded). See above for detailed information on the
                 interface of the function.
 

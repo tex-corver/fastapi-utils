@@ -30,7 +30,7 @@ class Info:
         request: Request,
         response: Optional[Response],
         method: str,
-        modified_handler: str,
+        modified_endpoint: str,
         modified_status: str,
         modified_duration: float,
     ):
@@ -42,7 +42,7 @@ class Info:
             request (Request): Python Requests request object.
             response (Response or None): Python Requests response object.
             method (str): Unmodified method of the request.
-            modified_handler (str): Handler representation after processing by
+            modified_endpoint (str): endpoint representation after processing by
                 instrumentator. For example grouped to `none` if not templated.
             modified_status (str): Status code representation after processing
                 by instrumentator. For example grouping into `2xx`, `3xx` and so on.
@@ -54,7 +54,7 @@ class Info:
         self.request = request
         self.response = response
         self.method = method
-        self.modified_handler = modified_handler
+        self.modified_endpoint = modified_endpoint
         self.modified_status = modified_status
         self.modified_duration = modified_duration
 
@@ -107,15 +107,15 @@ def default(
 
     You get the following:
 
-    * `http_requests_total` (`handler`, `status`, `method`): Total number of
-        requests by handler, status and method.
-    * `http_request_size_bytes` (`handler`): Total number of incoming
-        content length bytes by handler.
-    * `http_response_size_bytes` (`handler`): Total number of outgoing
-        content length bytes by handler.
+    * `http_requests_total` (`endpoint`, `status`, `method`): Total number of
+        requests by endpoint, status and method.
+    * `http_request_size_bytes` (`endpoint`): Total number of incoming
+        content length bytes by endpoint.
+    * `http_response_size_bytes` (`endpoint`): Total number of outgoing
+        content length bytes by endpoint.
     * `http_request_duration_highr_seconds` (no labels): High number of buckets
         leading to more accurate calculation of percentiles.
-    * `http_request_duration_seconds` (`handler`, `method`):
+    * `http_request_duration_seconds` (`endpoint`, `method`):
         Kepp the bucket count very low. Only put in SLIs.
 
     Args:
@@ -153,8 +153,8 @@ def default(
     try:
         TOTAL = Counter(
             name="http_requests_total",
-            documentation="Total number of requests by method, status and handler.",
-            labelnames=("method", "status", "handler"),
+            documentation="Total number of requests by method, status and endpoint.",
+            labelnames=("method", "status", "endpoint"),
             namespace=metric_namespace,
             subsystem=metric_subsystem,
             registry=registry,
@@ -163,11 +163,11 @@ def default(
         IN_SIZE = Summary(
             name="http_request_size_bytes",
             documentation=(
-                "Content length of incoming requests by handler. "
+                "Content length of incoming requests by endpoint. "
                 "Only value of header is respected. Otherwise ignored. "
                 "No percentile calculated. "
             ),
-            labelnames=("handler",),
+            labelnames=("endpoint",),
             namespace=metric_namespace,
             subsystem=metric_subsystem,
             registry=registry,
@@ -176,11 +176,11 @@ def default(
         OUT_SIZE = Summary(
             name="http_response_size_bytes",
             documentation=(
-                "Content length of outgoing responses by handler. "
+                "Content length of outgoing responses by endpoint. "
                 "Only value of header is respected. Otherwise ignored. "
                 "No percentile calculated. "
             ),
-            labelnames=("handler",),
+            labelnames=("endpoint",),
             namespace=metric_namespace,
             subsystem=metric_subsystem,
             registry=registry,
@@ -201,11 +201,11 @@ def default(
         LATENCY_LOWR = Histogram(
             name="http_request_duration_seconds",
             documentation=(
-                "Latency with only few buckets by handler. "
-                "Made to be only used if aggregation by handler is important. "
+                "Latency with only few buckets by endpoint. "
+                "Made to be only used if aggregation by endpoint is important. "
             ),
             buckets=latency_lowr_buckets,
-            labelnames=("method", "handler"),
+            labelnames=("method", "endpoint"),
             namespace=metric_namespace,
             subsystem=metric_subsystem,
             registry=registry,
@@ -214,24 +214,26 @@ def default(
         def instrumentation(info: Info) -> None:
             duration = info.modified_duration
 
-            TOTAL.labels(info.method, info.modified_status, info.modified_handler).inc()
+            TOTAL.labels(
+                info.method, info.modified_status, info.modified_endpoint
+            ).inc()
 
-            IN_SIZE.labels(info.modified_handler).observe(
+            IN_SIZE.labels(info.modified_endpoint).observe(
                 int(info.request.headers.get("Content-Length", 0))
             )
 
             if info.response and hasattr(info.response, "headers"):
-                OUT_SIZE.labels(info.modified_handler).observe(
+                OUT_SIZE.labels(info.modified_endpoint).observe(
                     int(info.response.headers.get("Content-Length", 0))
                 )
             else:
-                OUT_SIZE.labels(info.modified_handler).observe(0)
+                OUT_SIZE.labels(info.modified_endpoint).observe(0)
 
             if info.modified_status.startswith("2"):
                 LATENCY_HIGHR.observe(duration)
 
             LATENCY_LOWR.labels(
-                handler=info.modified_handler, method=info.method
+                endpoint=info.modified_endpoint, method=info.method
             ).observe(duration)
 
         return instrumentation

@@ -21,6 +21,7 @@ tex-corver-message-broker = { git = "git@github.com:tex-corver/message-broker.gi
 
 inflect = "^7.5.0"
 python-multipart = "^0.0.20"
+uvicorn = "^0.35.0"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.22.2"

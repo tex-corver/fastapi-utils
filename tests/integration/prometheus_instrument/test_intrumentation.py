@@ -99,12 +99,12 @@ class TestInstrumentation:
             METRIC = Counter(
                 name="http_total_requests_count",
                 documentation="Total number of HTTP requests",
-                labelnames=["handler", "method", "status"],
+                labelnames=["endpoint", "method", "status"],
             )
 
             def instrumentation(info: metrics.Info) -> None:
                 METRIC.labels(
-                    handler=info.modified_handler,
+                    endpoint=info.modified_endpoint,
                     method=info.method,
                     status=info.modified_status,
                 ).inc()
@@ -134,7 +134,7 @@ class TestInstrumentation:
             in response.content
         )
         assert (
-            b'http_total_requests_count_total{handler="/",method="GET",status="200"} 2.0'
+            b'http_total_requests_count_total{endpoint="/",method="GET",status="200"} 2.0'
             in response.content
         )
 
@@ -180,7 +180,7 @@ class TestInstrumentation:
         response = client.get("/metrics")
 
         assert b'status="400"' in response.content
-        assert b'handler="/always_error_httpstatus_enum"' in response.content
+        assert b'endpoint="/always_error_httpstatus_enum"' in response.content
 
     def test_untemplated_path(self, fastapi_app: FastAPI, registry: CollectorRegistry):
         @fastapi_app.get("/metrics")
@@ -198,5 +198,5 @@ class TestInstrumentation:
 
         response = client.get("/metrics")
 
-        assert b'handler="/404_does_not_exist"' not in response.content
-        assert b'handler="none"' in response.content
+        assert b'endpoint="/404_does_not_exist"' not in response.content
+        assert b'endpoint="none"' in response.content

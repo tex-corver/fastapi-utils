@@ -43,7 +43,7 @@ class PrometheusMiddleware:
         self.inprogress = Gauge(
             name="http_requests_inprogress",
             documentation="Number of HTTP requests in progress.",
-            labelnames=("method", "handler"),
+            labelnames=("method", "endpoint"),
             multiprocess_mode="livesum",
         )
 
@@ -54,10 +54,10 @@ class PrometheusMiddleware:
         request = Request(scope)
         start_time = default_timer()
 
-        handler, is_templated = self._get_handler(request)
-        handler = handler if is_templated else "none"
+        endpoint, is_templated = self._get_endpoint(request)
+        endpoint = endpoint if is_templated else "none"
 
-        inprogress = self.inprogress.labels(request.method, handler)
+        inprogress = self.inprogress.labels(request.method, endpoint)
         inprogress.inc()
 
         status_code = 500
@@ -99,7 +99,7 @@ class PrometheusMiddleware:
                 request=request,
                 response=response,
                 method=request.method,
-                modified_handler=handler,
+                modified_endpoint=endpoint,
                 modified_status=status,
                 modified_duration=duration,
             )
@@ -107,7 +107,7 @@ class PrometheusMiddleware:
             for instrumentation in self.instrumentations:
                 instrumentation(info)
 
-    def _get_handler(self, request: Request) -> Tuple[str, bool]:
+    def _get_endpoint(self, request: Request) -> Tuple[str, bool]:
         """Extracts either template or (if no template) path.
 
         Args:
